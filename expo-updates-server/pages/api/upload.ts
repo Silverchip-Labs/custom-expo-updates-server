@@ -18,9 +18,11 @@ export default async function uploadEndpoint(req: NextApiRequest, res: NextApiRe
       // ...
       if (req.method !== 'POST') return res.status(405).json({ error: 'Expected POST.' });
       try {
-        const runtimeVersion = req.headers['X-RuntimeVersion'];
+        console.log({ ...req.headers });
+        const runtimeVersion = req.headers['x-runtimeversion'];
 
         if (!runtimeVersion || !file) {
+          console.log({ runtimeVersion, file });
           res.status(400).json({ error: 'Invalid request payload' });
           return;
         }
@@ -81,3 +83,9 @@ const storage: StorageEngine = multer.diskStorage({
 
 // Create the multer middleware instance
 const upload = multer({ storage });
+
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
