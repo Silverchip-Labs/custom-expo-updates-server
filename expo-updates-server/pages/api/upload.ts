@@ -30,7 +30,11 @@ export default async function uploadEndpoint(req: NextApiRequest, res: NextApiRe
         }
 
         const zipFilePath = file.path;
-        const destinationPath = path.join(process.cwd(), 'updates', runtimeVersion);
+        const destinationPath = path.join(
+          process.cwd(),
+          `updates/${runtimeVersion}`,
+          Date.now().toString()
+        );
 
         // Create the updates folder if it doesn't exist
         if (!fs.existsSync(destinationPath)) {
@@ -38,7 +42,7 @@ export default async function uploadEndpoint(req: NextApiRequest, res: NextApiRe
         }
 
         // Extract the zip file
-        await extractZip(zipFilePath, destinationPath);
+        await decompress(zipFilePath, destinationPath);
 
         // Delete the uploaded zip file
         fs.unlinkSync(zipFilePath);
@@ -51,14 +55,6 @@ export default async function uploadEndpoint(req: NextApiRequest, res: NextApiRe
     }
   });
 }
-
-const extractZip = async (zipFilePath: string, destinationPath: string) => {
-  try {
-    await decompress(zipFilePath, destinationPath);
-  } catch (e) {
-    console.log({ e });
-  }
-};
 
 // Create a storage engine to define where to save the uploaded files
 const storage: StorageEngine = multer.diskStorage({
