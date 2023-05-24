@@ -1,7 +1,6 @@
 import fs from 'fs';
 import mime from 'mime';
 import { NextApiRequest, NextApiResponse } from 'next';
-import nullthrows from 'nullthrows';
 import path from 'path';
 
 import {
@@ -63,9 +62,11 @@ export default async function assetsEndpoint(req: NextApiRequest, res: NextApiRe
     const asset = fs.readFileSync(assetPath, null);
 
     res.statusCode = 200;
+    const type = isLaunchAsset ? 'application/javascript' : mime.getType(assetMetadata.ext);
+    if (!type) throw new Error(`No mime type found for asset ${assetName}`)
     res.setHeader(
       'content-type',
-      isLaunchAsset ? 'application/javascript' : nullthrows(mime.getType(assetMetadata.ext))
+      type
     );
     res.end(asset);
   } catch (error) {
