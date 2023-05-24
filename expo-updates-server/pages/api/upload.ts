@@ -28,10 +28,6 @@ export default async function uploadEndpoint(req: NextApiRequest, res: NextApiRe
           res.status(400).json({ error: 'Invalid request headers' });
           return;
         }
-        const uploadsDir = path.join(process.cwd(), 'uploads');
-        if (!fs.existsSync(uploadsDir)) {
-          fs.mkdirSync(uploadsDir, {recursive: true});
-        }
 
         const zipFilePath = file.path;
         const destinationPath = path.join(
@@ -63,6 +59,10 @@ export default async function uploadEndpoint(req: NextApiRequest, res: NextApiRe
 // Create a storage engine to define where to save the uploaded files
 const storage: StorageEngine = multer.diskStorage({
   destination: (req: Request, file: Express.Multer.File, cb) => {
+    const uploadsDir = path.join(process.cwd(), 'uploads');
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
     // Specify the destination folder where uploaded files will be stored
     cb(null, './uploads');
   },
