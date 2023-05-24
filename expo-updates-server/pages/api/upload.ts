@@ -1,9 +1,9 @@
+import decompress from "decompress";
 import { Request } from 'express';
 import fs from 'fs';
 import multer, { StorageEngine } from 'multer';
 import { NextApiRequest, NextApiResponse } from 'next';
 import path from 'path';
-import * as zlib from 'zlib';
 
 export default async function uploadEndpoint(req: NextApiRequest, res: NextApiResponse) {
   // @ts-ignore ts-todo
@@ -18,11 +18,9 @@ export default async function uploadEndpoint(req: NextApiRequest, res: NextApiRe
       // ...
       if (req.method !== 'POST') return res.status(405).json({ error: 'Expected POST.' });
       try {
-        console.log({ ...req.headers });
         const runtimeVersion = req.headers['x-runtimeversion'];
 
         if (!runtimeVersion || !file) {
-          console.log({ runtimeVersion, file });
           res.status(400).json({ error: 'Invalid request payload' });
           return;
         }
@@ -54,17 +52,12 @@ export default async function uploadEndpoint(req: NextApiRequest, res: NextApiRe
   });
 }
 
-const extractZip = (zipFilePath: string, destinationPath: string): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    const readStream = fs.createReadStream(zipFilePath);
-    const writeStream = fs.createWriteStream(destinationPath);
-
-    readStream
-      .pipe(zlib.createUnzip())
-      .pipe(writeStream)
-      .on('error', (error) => reject(error))
-      .on('close', () => resolve());
-  });
+const extractZip = async (zipFilePath: string, destinationPath: string) => {
+  try {
+    await decompress(zipFilePath, destinationPath);
+  } catch (e) {
+    console.log({ e });
+  }
 };
 
 // Create a storage engine to define where to save the uploaded files
